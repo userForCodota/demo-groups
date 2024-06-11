@@ -10,6 +10,7 @@
     <description>work-flow-engine</description>
     <modules>
         <module>demo-camunda</module>
+        <module>demo-flowable</module>
     </modules>
     <properties>
         <java.version>1.8</java.version>
