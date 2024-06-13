@@ -4,11 +4,15 @@ import cn.hutool.system.SystemUtil;
 import org.flowable.engine.ProcessEngine;
 import org.flowable.engine.RepositoryService;
 import org.flowable.engine.RuntimeService;
+import org.flowable.engine.TaskService;
 import org.flowable.engine.repository.Deployment;
 import org.flowable.engine.runtime.ProcessInstance;
+import org.flowable.task.api.Task;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+
+import java.util.List;
 
 @SpringBootTest
 class DemoFlowableApplicationTests {
@@ -52,7 +56,30 @@ class DemoFlowableApplicationTests {
         // runtimeService.startProcessInstanceByKey(processDefinitionKey);
 
         // 根据ID（推荐）,来自`act_re_procdef`.`ID_`
-        String processDefinitionId = "myFirstFlowable:1:6f80684a-2960-11ef-9d92-005056c00001";
+        String processDefinitionId = "myFirstFlowable:1:37befb99-299a-11ef-b26a-005056c00008";
         ProcessInstance processInstance = runtimeService.startProcessInstanceById(processDefinitionId);
+    }
+
+    /**
+     * 查询用户待办事项
+     */
+    @Test
+    void findFlow() {
+        TaskService taskService = processEngine.getTaskService();
+        // 获取act_ru_task 表中 assignee 字段是zhangsan的全部记录
+        List<Task> list = taskService.createTaskQuery()
+                .taskAssignee("zhangsan")
+                .list();
+        for (Task task : list) {
+            System.out.println(task.getId());
+        }
+    }
+
+    @Test
+    void completeTask() {
+        TaskService taskService = processEngine.getTaskService();
+        // 完成任务,可以理解为完成某个节点,ID来自`act_ru_task`.`ID_`
+        // taskService.complete("611345b0-299a-11ef-b728-005056c00008");// 人事审批
+        taskService.complete("a2e1bd50-299-11ef-a94d-005056c00008");// 经理审批
     }
 }
