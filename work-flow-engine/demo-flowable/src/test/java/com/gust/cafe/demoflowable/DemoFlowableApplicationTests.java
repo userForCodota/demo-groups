@@ -32,8 +32,8 @@ class DemoFlowableApplicationTests {
         // 后续步骤
         RepositoryService repositoryService = processEngine.getRepositoryService();
         Deployment deployment = repositoryService.createDeployment()
-                .addClasspathResource("process/001_test/firstflow.bpmn20.xml")
-                .name("my_first_flow")
+                .addClasspathResource("process/001_test/myFirstFlowable.bpmn20.xml")
+                .name("my_first_flowable")
                 .deploy();
         String deploymentId = deployment.getId();
         System.out.println("部署ID：" + deploymentId);
