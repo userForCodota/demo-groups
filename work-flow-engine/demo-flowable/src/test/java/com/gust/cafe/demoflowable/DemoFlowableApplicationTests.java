@@ -52,7 +52,7 @@ class DemoFlowableApplicationTests {
         // runtimeService.startProcessInstanceByKey(processDefinitionKey);
 
         // 根据ID（推荐）,来自`act_re_procdef`.`ID_`
-        String processDefinitionId = "firstflow:1:ba3f555a-2950-11ef-ad58-005056c00001";
+        String processDefinitionId = "myFirstFlowable:1:6f80684a-2960-11ef-9d92-005056c00001";
         ProcessInstance processInstance = runtimeService.startProcessInstanceById(processDefinitionId);
     }
 }
