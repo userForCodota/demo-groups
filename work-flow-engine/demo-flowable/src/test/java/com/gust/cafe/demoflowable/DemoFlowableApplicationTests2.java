@@ -12,7 +12,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @SpringBootTest
 class DemoFlowableApplicationTests2 {
@@ -74,7 +76,8 @@ class DemoFlowableApplicationTests2 {
     void completeTask() {
         TaskService taskService = processEngine.getTaskService();
         // 完成任务,可以理解为完成某个节点,ID来自`act_ru_task`.`ID_`
-        // taskService.complete("611345b0-299a-11ef-b728-005056c00008");// 人事审批
-        taskService.complete("a2e1bd50-299-11ef-a94d-005056c00008");// 经理审批
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("myAssign1", "lisi");
+        taskService.complete("af2cdc7a-29ef-11ef-8dc2-005056c00001", variables);
     }
 }
