@@ -57,7 +57,7 @@ class DemoFlowableApplicationTests3 {
         // runtimeService.startProcessInstanceById(processDefinitionId);
         // 如果第一个节点的审批人也是表达式,则同理需要传入参数
         Map<String, Object> variables = new HashMap<>();
-        variables.put("myAssign1", "zhangsan");
+        variables.put("assignee2", "zhangsan");
         runtimeService.startProcessInstanceById(processDefinitionId, variables);
     }
 
