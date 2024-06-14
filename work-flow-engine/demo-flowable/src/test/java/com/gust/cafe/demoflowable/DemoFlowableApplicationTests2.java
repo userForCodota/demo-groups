@@ -37,6 +37,7 @@ class DemoFlowableApplicationTests2 {
                 .name("任务分配案例")
                 .deploy();
         String deploymentId = deployment.getId();
+        // ID来自`act_re_deployment`.`ID_`
         System.out.println("部署ID：" + deploymentId);
     }
 
@@ -53,7 +54,7 @@ class DemoFlowableApplicationTests2 {
         // runtimeService.startProcessInstanceByKey(processDefinitionKey);
 
         // 根据ID（推荐）,来自`act_re_procdef`.`ID_`
-        String processDefinitionId = "example01:1:6f914002-29ee-11ef-9dfc-005056c00001";
+        String processDefinitionId = "example01:1:82ab4d12-29f7-11ef-bdf9-005056c00001";
         ProcessInstance processInstance = runtimeService.startProcessInstanceById(processDefinitionId);
     }
 
@@ -65,7 +66,7 @@ class DemoFlowableApplicationTests2 {
         TaskService taskService = processEngine.getTaskService();
         // 获取act_ru_task 表中 assignee 字段是zhangsan的全部记录
         List<Task> list = taskService.createTaskQuery()
-                .taskAssignee("lisi")
+                .taskAssignee("zhangsan")
                 .list();
         for (Task task : list) {
             System.out.println(task.getId());
@@ -78,7 +79,7 @@ class DemoFlowableApplicationTests2 {
         // 完成任务,可以理解为完成某个节点,ID来自`act_ru_task`.`ID_`
         Map<String, Object> variables = new HashMap<>();
         // variables.put("myAssign1", "lisi");
-        // taskService.complete("af2cdc7a-29ef-11ef-8dc2-005056c00001", variables);
-        taskService.complete("b6007635-29f3-11ef-acd1-005056c00001");
+        // taskService.complete("e8ac6dea-29f7-11ef-b361-005056c00001", variables);
+        taskService.complete("9894a06f-29f8-11ef-955b-005056c00001");
     }
 }
