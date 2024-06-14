@@ -65,7 +65,7 @@ class DemoFlowableApplicationTests2 {
         TaskService taskService = processEngine.getTaskService();
         // 获取act_ru_task 表中 assignee 字段是zhangsan的全部记录
         List<Task> list = taskService.createTaskQuery()
-                .taskAssignee("zhangsan")
+                .taskAssignee("lisi")
                 .list();
         for (Task task : list) {
             System.out.println(task.getId());
@@ -77,7 +77,8 @@ class DemoFlowableApplicationTests2 {
         TaskService taskService = processEngine.getTaskService();
         // 完成任务,可以理解为完成某个节点,ID来自`act_ru_task`.`ID_`
         Map<String, Object> variables = new HashMap<>();
-        variables.put("myAssign1", "lisi");
-        taskService.complete("af2cdc7a-29ef-11ef-8dc2-005056c00001", variables);
+        // variables.put("myAssign1", "lisi");
+        // taskService.complete("af2cdc7a-29ef-11ef-8dc2-005056c00001", variables);
+        taskService.complete("b6007635-29f3-11ef-acd1-005056c00001");
     }
 }

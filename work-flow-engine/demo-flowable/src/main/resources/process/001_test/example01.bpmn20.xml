@@ -16,7 +16,7 @@
             </extensionElements>
         </userTask>
         <sequenceFlow id="sid-BE1E1BBF-B2D2-4528-BBAB-ED5F971CEFDC" sourceRef="sid-D1A13260-908D-48EB-AD22-F9F7DB15F02A" targetRef="sid-B9214EF5-0179-47AE-995F-1D4C9DFB65BA"></sequenceFlow>
-        <userTask id="sid-EBC395B8-4C83-48B5-8172-23415B54C7B1" name="审批用户3" flowable:assignee="${MyBean.getAssignee()}" flowable:formFieldValidation="true">
+        <userTask id="sid-EBC395B8-4C83-48B5-8172-23415B54C7B1" name="审批用户3" flowable:assignee="${myBean.getAssignee()}" flowable:formFieldValidation="true">
             <extensionElements>
                 <modeler:initiator-can-complete xmlns:modeler="http://flowable.org/modeler"><![CDATA[false]]></modeler:initiator-can-complete>
             </extensionElements>
