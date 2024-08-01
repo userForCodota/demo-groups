@@ -1,6 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
-
+// 单行注释
+/*
+多行
+注释
+*/
 contract SimpleContract {
     // 状态变量
     uint256 public number;
