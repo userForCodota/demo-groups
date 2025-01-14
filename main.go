@@ -3,108 +3,98 @@ package main
 import (
 	"fmt"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/spf13/viper"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
-var logger *zap.Logger
+var (
+	once           sync.Once
+	globalLogger   *zap.Logger
+	currentLogDate string
+)
 
-func main() {
-	// 1. 初始化配置
-	initConfig()
+// GetLogFileName 生成当前日期的日志文件名
+func GetLogFileName() string {
+	currentDate := time.Now().Format("2006-01-02")
+	return fmt.Sprintf("logs/%s-app.log", currentDate)
+}
 
-	// 2. 初始化日志
-	initLogger()
+// GetLumberjackLogger 返回新的 lumberjack.Logger 实例
+func GetLumberjackLogger() *lumberjack.Logger {
+	return &lumberjack.Logger{
+		Filename:   GetLogFileName(),
+		MaxSize:    10, // 每个日志文件的最大大小 (MB)
+		MaxBackups: 7,  // 保留旧文件的最大个数
+		MaxAge:     30, // 保留旧文件的最大天数
+		Compress:   true,
+	}
+}
 
-	// 3. 设置Gin模式
-	gin.SetMode(viper.GetString("gin.mode"))
+// GetGlobalLogger 返回全局 logger 实例，并在需要时更新
+func GetGlobalLogger() *zap.Logger {
+	once.Do(func() {
+		encoderConfig := zap.NewProductionEncoderConfig()
+		encoderConfig.TimeKey = "time"                        // 时间字段名称
+		encoderConfig.EncodeTime = zapcore.RFC3339TimeEncoder // 设置时间格式为 RFC3339
 
-	// 4. 创建Gin引擎
-	r := gin.New()
-
-	// 5. 使用自定义的日志中间件
-	r.Use(GinLogger(logger))
-
-	// 6. 添加一些路由
-	r.GET("/", func(c *gin.Context) {
-		logger.Info("Handling root request")
-		c.JSON(200, gin.H{
-			"message": "Hello, World!",
-		})
+		// 创建 logger
+		globalLogger = zap.New(zapcore.NewCore(
+			zapcore.NewJSONEncoder(encoderConfig), // 使用自定义编码器
+			zapcore.AddSync(GetLumberjackLogger()),
+			zap.DebugLevel,
+		))
 	})
 
-	// 7. 启动服务器
-	port := viper.GetString("server.port")
-	logger.Info(fmt.Sprintf("Server is starting on port %s", port))
-	r.Run(":" + port)
+	// 更新日志日期并在必要时重建 logger
+	newLogDate := time.Now().Format("2006-01-02")
+	if newLogDate != currentLogDate {
+		currentLogDate = newLogDate
+		// 重新创建 logger
+		encoderConfig := zap.NewProductionEncoderConfig()
+		encoderConfig.TimeKey = "time"                        // 时间字段名称
+		encoderConfig.EncodeTime = zapcore.RFC3339TimeEncoder // 设置时间格式为 RFC3339
+
+		globalLogger = zap.New(zapcore.NewCore(
+			zapcore.NewJSONEncoder(encoderConfig), // 使用自定义编码器
+			zapcore.AddSync(GetLumberjackLogger()),
+			zap.DebugLevel,
+		))
+	}
+
+	return globalLogger
 }
 
-func initConfig() {
-	viper.SetConfigName("config")
-	viper.SetConfigType("yaml")
-	viper.AddConfigPath(".")
-	err := viper.ReadInConfig()
-	if err != nil {
-		fmt.Printf("Error reading config file: %s\n", err)
-		os.Exit(1)
-	}
-}
+func main() {
+	// 创建日志存储目录，如果不存在
+	os.MkdirAll("logs", os.ModePerm)
 
-func initLogger() {
-	// 配置lumberjack
-	lumberjackLogger := &lumberjack.Logger{
-		Filename:   viper.GetString("log.filename"),
-		MaxSize:    viper.GetInt("log.maxsize"),
-		MaxBackups: viper.GetInt("log.maxbackups"),
-		MaxAge:     viper.GetInt("log.maxage"),
-		Compress:   viper.GetBool("log.compress"),
-	}
+	// 创建 Gin Router
+	r := gin.New()
 
-	// 配置zapcore
-	encoderConfig := zap.NewProductionEncoderConfig()
-	encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
+	// 自定义 Gin Logger 中间件
+	r.Use(func(c *gin.Context) {
+		// 记录请求日志
+		GetGlobalLogger().Info("请求", zap.String("method", c.Request.Method), zap.String("path", c.Request.URL.Path))
+		c.Next() // 继续处理请求
+	})
 
-	// 设置日志级别
-	logLevel := viper.GetString("log.level")
-	var level zapcore.Level
-	err := level.UnmarshalText([]byte(logLevel))
-	if err != nil {
-		fmt.Printf("Error parsing log level: %s\n", err)
-		os.Exit(1)
-	}
+	// 示例路由，调用全局 logger
+	r.GET("/", func(c *gin.Context) {
+		GetGlobalLogger().Info("处理 / 请求")
+		c.String(200, "Hello World!")
+	})
 
-	core := zapcore.NewCore(
-		zapcore.NewJSONEncoder(encoderConfig),
-		zapcore.AddSync(lumberjackLogger),
-		level,
-	)
+	go func() {
+		for {
+			GetGlobalLogger().Info("每隔5秒记录一次日志")
+			time.Sleep(5 * time.Second)
+		}
+	}()
 
-	logger = zap.New(core, zap.AddCaller())
-}
-
-func GinLogger(logger *zap.Logger) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		start := time.Now()
-		path := c.Request.URL.Path
-		query := c.Request.URL.RawQuery
-
-		c.Next()
-
-		cost := time.Since(start)
-		logger.Info(path,
-			zap.Int("status", c.Writer.Status()),
-			zap.String("method", c.Request.Method),
-			zap.String("path", path),
-			zap.String("query", query),
-			zap.String("ip", c.ClientIP()),
-			zap.String("user-agent", c.Request.UserAgent()),
-			zap.String("errors", c.Errors.ByType(gin.ErrorTypePrivate).String()),
-			zap.Duration("cost", cost),
-		)
-	}
+	r.Run(":8080") // 默认8080
 }
