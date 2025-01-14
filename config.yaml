@@ -1,0 +1,13 @@
+gin:
+  mode: debug
+
+server:
+  port: 8080
+
+log:
+  filename: app.log
+  maxsize: 100
+  maxbackups: 3
+  maxage: 28
+  compress: true
+  level: info

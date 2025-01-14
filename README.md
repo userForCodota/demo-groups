@@ -1,2 +1,0 @@
-# demo-groups
-demo-groups
